@@ -1,11 +1,11 @@
 # The name of the application (no spaces)
-app_name: stringed_instruments
+app_name: cobalt
 
 # A brief description of the app.
-description : Find all the proper nouns which have adjectives modifying them. Dump the nouns and the adjectives into a text file.
+description : Find references to cobalt minerals in the literature.
 
 # First and last name of the user
-user: Example User
+user: CobaltGroup
 
 # The NLP product to run the application against
 product: NLP352
@@ -14,7 +14,7 @@ product: NLP352
 frequency: weekly
 
 # A list of terms used to subset the corpus
-terms: [banjo, guitar, violin, viola, piano, cello]
+terms: [alloclasite, aplowite, asbolane, bieberite, bornhardite, bouazzerite, burgessite, carrollite, cattierite, clinosafflorite, cobaltarthurite, cobaltaustinite, cobaltite, cobaltkieserite, cobaltkoritnigite, cobaltlotharmeyerite, cobaltneustädtelite, cobaltoblodite, cobaltogordaite, cobaltomenite, cobaltpentlandite, cobalttsumcorite, cobaltzippeite, cochromite, comblainite, costibite, ferroskutterudite, freboldite, glaucodot, hloušekite, jaipurite, jamborite , julienite, karpenkoite, kieftite, kieftite, kolwezite, langisite, leverettite, linnaeite, mattagamite, metakirchheimerite, modderite, moorhouseite, neustädtelite, oenite, oursinite, pakhomovskyite, paracostibite, petewilliamsite, pradetite, rappoldite, roselite, roselite-beta, safflorite, schneebergite, siegenite, skutterudite, smolyaninovite, spherocobaltite, thérèsemagnanite, trogtalite, tyrrellite, wairauite, willyamite, wupatkiite]
 
 # Alternatively, a list of dictionaries can be provided in place of a list of terms
-dictionaries: [instruments]
+#dictionaries: [instruments]

@@ -1,57 +1,175 @@
-"""
-File: run.py
-Description: Example app utilizing the GeoDeepDive infrastructure and products.
-    This will look at the produced NLP table and print a list of proper nouns which
-    are modified by adjectives, along with the sentence id in which they occur.
-Assumes: make setup-local has been run (so that the example database is populated)
-"""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import division
 
 import yaml
-import psycopg2
-from psycopg2.extensions import AsIs
-
-with open('./credentials', 'r') as credential_yaml:
-    credentials = yaml.load(credential_yaml)
+import json
+import urllib2
+import csv
+import re
 
 with open('./config', 'r') as config_yaml:
     config = yaml.load(config_yaml)
 
-# Connect to Postgres
-connection = psycopg2.connect(
-    dbname=credentials['postgres']['database'],
-    user=credentials['postgres']['user'],
-    host=credentials['postgres']['host'],
-    port=credentials['postgres']['port'])
-cursor = connection.cursor()
+def update_output(docid, sentid, minerals, ages, locations, lemma):
+    output.append({
+        "docid": docid,
+        "sentid": sentid,
+        "minerals": minerals,
+        "ages": ages,
+        "locations": locations,
+        "lemma": lemma
+    })
 
-proper_nouns_with_adj = {} # key: proper_noun, value: (adjective, sentence_id)
 
-# read all sentences from our NLP example database.
-cursor.execute("SELECT * FROM stringed_instruments_sentences_nlp352;")
-sentences = cursor.fetchall()
-for sentence in sentences:
-    sentid = sentence[1]
-    words = sentence[3]
-    poses = sentence[4]
-    dep_parents = sentence[8]
-    proper_nouns = [] # list of proper nouns
-    adjectives = [] # list of adjectives
-    for idx, pos in enumerate(poses): # look for proper nouns and adjectives
-        if pos=="NNP":
-            proper_nouns.append(idx)
-        elif pos=="JJ":
-            adjectives.append(idx)
-    for idx, parent in enumerate(dep_parents): # loop over dependencies to look for adjectives which relate to a proper noun
-        # within the table, the dep_parents is indexed from 1.  Our internal
-        # indexing is from 0, so subtract one.
-        if idx in adjectives and parent-1 in proper_nouns:
-            if words[parent-1] in proper_nouns_with_adj:
-                proper_nouns_with_adj[words[parent-1]].append((words[idx], sentid))
-            else:
-                proper_nouns_with_adj[words[parent-1]] = [(words[idx], sentid)]
+def filter_output(item):
+    if item['docid'] in acknowledgements.keys() and item['sentid'] < acknowledgements[item['docid']]:
+        return True
+    elif item['docid'] in refs.keys() and item['sentid'] < refs[item['docid']]:
+        return True
+    else:
+        return False
 
-# write results to the output directory
-with open("./output/proper_nouns_with_adjectives", "w") as fout:
-    for proper_noun in proper_nouns_with_adj.keys():
-        fout.write("%s - %s\n" % (proper_noun, proper_nouns_with_adj[proper_noun]))
+# Format output before writing to CSV
+def formatted(item):
+    return {
+        'docid': item['docid'],
+        'sentid': item['sentid'],
+        'ages': ';'.join(item['ages']),
+        'locations': ';'.join(item['locations']),
+        'lemma': item['lemma']
+    }
 
+def formatRef(ref, total):
+    return {
+        'docid': ref['id'].encode('utf-8'),
+        'title': ref['title'].encode('utf-8'),
+        'volume': ref['volume'].encode('utf-8'),
+        'journal': ref['journal'].encode('utf-8'),
+        'link': ';'.join([l['url'] for l in ref['link']]).encode('utf-8'),
+        'publisher': ref['publisher'].encode('utf-8'),
+        'author': ';'.join([a['name'] for a in ref['author']]).encode('utf-8'),
+        'pages': ref['pages'].encode('utf-8'),
+        'number': ref['number'].encode('utf-8'),
+        'identifier': ';'.join(i['id'] for i in ref['identifier']).encode('utf-8'),
+        'impact': total / len(output)
+    }
+# Set up lists of terms we are interested in
+minerallist = config['terms']
+agelist = ['ma', 'age', 'dating', 'ka', 'ga', 'kyr', 'myr', 'year', 'geochronology', 'm.a.', 'k.a.', 'date']
+
+# list of articles having age formation
+articleID = []
+
+# Titles of articles
+titles = {}
+
+# dictionary of age-containing article length before reference
+# Keys are docids and values are sentids
+## note refs has fewer items than articleID since articleID counts paper that has age information in reference part
+refs = {}
+acknowledgements = {}
+
+output = []
+
+# Open the input file
+'''
+0  -  docid
+1  -  sentid
+2  -  wordidx
+3  -  words
+4  -  poses
+5  -  ners
+6  -  lemmas
+7  -  dep_paths
+'''
+with open('./input/test.txt') as textlines:
+    # Look for lines containing Cr mineral names, location, or age information
+    for line in textlines.readlines():
+        # Clean up the input
+        sline = line.lower().split('\t')
+        tL = re.sub('[{}"]', '', sline[6])
+        tLL = re.sub(r',,,', ',;,', tL)
+        # create an array of lemmas
+        lemmas = tLL.split(',') #get rid of {}",,, in the raw texts
+
+        # If there is an age term in the lemmas and we haven't accounted for this article yet, record it
+        if len(list(set(agelist).intersection(set(lemmas)))) > 0 and sline[0] not in articleID:
+            articleID.append(sline[0])
+
+        # If there is a mention of references in the lemmas and we have seen this docid, update refs with the docid and sentid
+        if ('reference' in lemmas or 'referenc' in lemmas or 'references' in lemmas) and sline[0] in articleID:
+            refs.update({ sline[0]: int(sline[1]) })
+
+        # If there is a mention of acknowledgements in the lemmas and we have seen this docid, update acknowledgements with the docid and sentid
+        if ('acknowledgement' in lemmas or
+            'acknowledgements' in lemmas or
+            'acknowledge' in lemmas or
+            'thank' in lemmas or
+            'thanks' in lemmas) and sline[0] in articleID:
+            acknowledgements.update({ sline[0]: int(sline[1]) })
+
+
+        # record the title of all articles if this is the first sentence in an article
+        if sline[1] == '1':
+            titles.update({ sline[0]: tLL })
+
+        # Clean up the ners
+        ners = re.sub('[{}"]', '', sline[5]).split(',')
+
+        # Get an array that is the interesction of minerals and lemmas
+        minerals_found = list(set(minerallist).intersection(set(lemmas)))
+
+        # Store ages found
+        ages_found = []
+
+        # Store location words found
+        locations_found = []
+
+        # Record all words tagged as 'LOCATION' in ners
+        if 'location' in ners:
+            for pos in [i for i,j in enumerate(ners) if j == 'location']:
+                locations_found.append(lemmas[pos])
+
+        # Find and record dates using the 'NUMBER' tag in ners
+        if 'number' in ners:
+            for pos in [i for i,j in enumerate(ners) if j == 'number']:
+                if pos < len(lemmas) - 1 and lemmas[pos + 1] in ['ma', 'ga', 'ka', 'm.a.', 'g.a.', 'k.a.','kyrs', 'myrs']:
+                    if pos > 0 and lemmas[pos - 1] == '±':
+                        ages_found.append(lemmas[pos - 2] + lemmas[pos - 1] + lemmas[pos] + lemmas[pos + 1])
+                    else:
+                        ages_found.append(lemmas[pos] + lemmas[pos + 1])
+
+        # If we found anything, record it
+        if len(minerals_found) > 0 or len(ages_found) > 0 or len(locations_found) > 0:
+            update_output(sline[0], int(sline[1]), minerals_found, ages_found, locations_found, ' '.join(lemmas))
+
+
+
+# Filter the output in place
+output[:] = [formatted(item) for item in output if filter_output(item)]
+
+# Find unique documents
+uniqueDocs = dict(set([(item['docid'], 0) for item in output]))
+for item in output:
+    uniqueDocs[item['docid']] += 1
+
+outputRefs = []
+
+for docid in uniqueDocs.keys():
+    response = json.load(urllib2.urlopen('https://geodeepdive.org/api/v1/articles?id=' + docid))
+    outputRefs.append(response['success']['data'][0])
+
+outputRefs = [formatRef(ref, uniqueDocs[ref['id']]) for ref in outputRefs]
+
+
+with open('./output/newresults.csv', 'w') as out:
+    writer = csv.DictWriter(out, fieldnames=['docid', 'sentid', 'ages', 'locations', 'lemma'])
+    writer.writeheader()
+    writer.writerows(output)
+
+
+with open('./output/unique_docs.csv', 'w') as out2:
+    writer = csv.DictWriter(out2, fieldnames=['docid', 'title', 'author', 'journal', 'publisher', 'identifier', 'pages', 'number', 'volume', 'link', 'impact'])
+    writer.writeheader()
+    writer.writerows(outputRefs)

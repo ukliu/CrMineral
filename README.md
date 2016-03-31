@@ -1,4 +1,4 @@
-# GeoDeepDive Application Template
+# Cobalt
 A template for building applications to extract information from published documents in the [GeoDeepDive](https://geodeepdive.org) infrastructure
 
 ## Getting started
@@ -54,7 +54,7 @@ The `./input` directory contains an example of the possible inputs. These includ
 
   * Cuneiform OCR output (cuneiform-page-000\*.html)
   * Tesseract OCR output (page-\*.hocr.html)
-  * TSV dumps of sentence-level NLP processings with varying Stanford CoreNLP version and output formatting 
+  * TSV dumps of sentence-level NLP processings with varying Stanford CoreNLP version and output formatting
   * bibjson file containing the article's bibliographic information.
 
  See `./input/README` for more details on each product.
@@ -66,7 +66,7 @@ matching the desired terms will be available within the `./input`.
 ## Running on GeoDeepDive Infrastructure
 All applications are required to have the same structure as this repository, namely an empty folder named `output`, a valid
 `config` file, an updated `requirements.txt` describing any Python dependencies, and `run.py` which runs the application
-and outputs results. The `credentials` file will be ignored and substituted with a unique version at run time. The `input` 
+and outputs results. The `credentials` file will be ignored and substituted with a unique version at run time. The `input`
 directory will similarly be substituted with the complete set of desired products matching the terms (or dictionary) specified.
 
 The GeoDeepDive infrastructure will have the following software available:

@@ -41,7 +41,6 @@ def formatted(item):
     }
 
 def formatRef(ref, total):
-    print ref
     return {
         'docid': ref['id'].encode('utf-8'),
         'title': ref['title'].encode('utf-8'),

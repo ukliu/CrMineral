@@ -41,19 +41,21 @@ def formatted(item):
     }
 
 def formatRef(ref, total):
+    print ref
     return {
         'docid': ref['id'].encode('utf-8'),
         'title': ref['title'].encode('utf-8'),
         'volume': ref['volume'].encode('utf-8'),
         'journal': ref['journal'].encode('utf-8'),
-        'link': ';'.join([l['url'] for l in ref['link']]).encode('utf-8'),
+        'link': ';'.join([l['url'] for l in ref['link'] if l['type'] != 'filepath']).encode('utf-8'),
         'publisher': ref['publisher'].encode('utf-8'),
         'author': ';'.join([a['name'] for a in ref['author']]).encode('utf-8'),
         'pages': ref['pages'].encode('utf-8'),
         'number': ref['number'].encode('utf-8'),
-        'identifier': ';'.join(i['id'] for i in ref['identifier']).encode('utf-8'),
+        'identifier': ';'.join(i['id'] for i in ref['identifier']).encode('utf-8') if 'identifier' in ref else '',
         'impact': total / len(output)
     }
+
 # Set up lists of terms we are interested in
 minerallist = config['terms']
 agelist = ['ma', 'age', 'dating', 'ka', 'ga', 'kyr', 'myr', 'year', 'geochronology', 'm.a.', 'k.a.', 'date']
@@ -83,7 +85,7 @@ output = []
 6  -  lemmas
 7  -  dep_paths
 '''
-with open('./input/test.txt') as textlines:
+with open('./input/co_nlp352.txt') as textlines:
     # Look for lines containing Cr mineral names, location, or age information
     for line in textlines.readlines():
         # Clean up the input
@@ -149,6 +151,12 @@ with open('./input/test.txt') as textlines:
 # Filter the output in place
 output[:] = [formatted(item) for item in output if filter_output(item)]
 
+# Write the output to disk
+with open('./output/results.csv', 'w') as out:
+    writer = csv.DictWriter(out, fieldnames=['docid', 'sentid', 'ages', 'locations', 'lemma'])
+    writer.writeheader()
+    writer.writerows(output)
+
 # Find unique documents
 uniqueDocs = dict(set([(item['docid'], 0) for item in output]))
 for item in output:
@@ -156,17 +164,12 @@ for item in output:
 
 outputRefs = []
 
+# Find the metadata for each
 for docid in uniqueDocs.keys():
     response = json.load(urllib2.urlopen('https://geodeepdive.org/api/v1/articles?id=' + docid))
     outputRefs.append(response['success']['data'][0])
 
 outputRefs = [formatRef(ref, uniqueDocs[ref['id']]) for ref in outputRefs]
-
-
-with open('./output/newresults.csv', 'w') as out:
-    writer = csv.DictWriter(out, fieldnames=['docid', 'sentid', 'ages', 'locations', 'lemma'])
-    writer.writeheader()
-    writer.writerows(output)
 
 
 with open('./output/unique_docs.csv', 'w') as out2:

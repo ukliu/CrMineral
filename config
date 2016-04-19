@@ -17,4 +17,4 @@ frequency: weekly
 terms: [alloclasite, aplowite, asbolane, bieberite, bornhardite, bouazzerite, burgessite, carrollite, cattierite, clinosafflorite, cobaltarthurite, cobaltaustinite, cobaltite, cobaltkieserite, cobaltkoritnigite, cobaltlotharmeyerite, cobaltneustädtelite, cobaltoblodite, cobaltogordaite, cobaltomenite, cobaltpentlandite, cobalttsumcorite, cobaltzippeite, cochromite, comblainite, costibite, ferroskutterudite, freboldite, glaucodot, hloušekite, jaipurite, jamborite , julienite, karpenkoite, kieftite, kieftite, kolwezite, langisite, leverettite, linnaeite, mattagamite, metakirchheimerite, modderite, moorhouseite, neustädtelite, oenite, oursinite, pakhomovskyite, paracostibite, petewilliamsite, pradetite, rappoldite, roselite, roselite-beta, safflorite, schneebergite, siegenite, skutterudite, smolyaninovite, spherocobaltite, thérèsemagnanite, trogtalite, tyrrellite, wairauite, willyamite, wupatkiite]
 
 # Alternatively, a list of dictionaries can be provided in place of a list of terms
-#dictionaries: [instruments]
+dictionary: co

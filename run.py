@@ -35,6 +35,7 @@ def formatted(item):
     return {
         'docid': item['docid'],
         'sentid': item['sentid'],
+        'minerals': ';'.join(item['minerals']),
         'ages': ';'.join(item['ages']),
         'locations': ';'.join(item['locations']),
         'lemma': item['lemma']
@@ -135,7 +136,7 @@ with open('./input/co_nlp352.txt') as textlines:
         # Find and record dates using the 'NUMBER' tag in ners
         if 'number' in ners:
             for pos in [i for i,j in enumerate(ners) if j == 'number']:
-                if pos < len(lemmas) - 1 and lemmas[pos + 1] in ['ma', 'ga', 'ka', 'm.a.', 'g.a.', 'k.a.','kyrs', 'myrs']:
+                if pos < len(lemmas) - 1 and lemmas[pos + 1] in agelist:
                     if pos > 0 and lemmas[pos - 1] == '±':
                         ages_found.append(lemmas[pos - 2] + lemmas[pos - 1] + lemmas[pos] + lemmas[pos + 1])
                     else:
@@ -152,7 +153,7 @@ output[:] = [formatted(item) for item in output if filter_output(item)]
 
 # Write the output to disk
 with open('./output/results.csv', 'w') as out:
-    writer = csv.DictWriter(out, fieldnames=['docid', 'sentid', 'ages', 'locations', 'lemma'])
+    writer = csv.DictWriter(out, fieldnames=['docid', 'sentid', 'minerals','ages', 'locations', 'lemma'])
     writer.writeheader()
     writer.writerows(output)
 

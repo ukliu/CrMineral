@@ -44,7 +44,7 @@ def formatted(item):
 def formatRef(ref, total):
     return {
         'docid': ref['id'].encode('utf-8'),
-        'title': ref['title'].encode('utf-8'),
+        'title': ref['title'].encode('utf-8') if ref['title'] is not None else "",
         'volume': ref['volume'].encode('utf-8'),
         'journal': ref['journal'].encode('utf-8'),
         'link': ';'.join([l['url'] for l in ref['link'] if l['type'] != 'filepath']).encode('utf-8'),

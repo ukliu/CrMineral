@@ -1,0 +1,20 @@
+# The name of the application (no spaces)
+app_name: Cr
+
+# A brief description of the app.
+description : Find references to Cr minerals except chromite and chromium in the literature.
+
+# First and last name of the user
+user: CrGroup
+
+# The NLP product to run the application against
+product: NLP352
+
+# How often the application should be run
+frequency: weekly
+
+# A list of terms used to subset the corpus
+terms: [batisivite,bentorite,bracewellite,carmichaelite,chromatite,chrombismite,chromceladonite,chromferide,chromium-dravite,chromo-alumino-povondraite,chromphyllite,cochromite,crichtonite,cuprokalininite,davidite-(ce),davidite-(la),dessauite-(y),dietzeite,eskolaite,ferchromide,florensovite,george-ericksenite,grimaldiite,guyanaite,hashemite,hawthorneite,iquiqueite,isovite,kalininite,knorringite,kosmochlor,lindsleyite,lópezite,loveringite,magnesiochromite,manganochromite,mapiquiroite,mariinskite,mathiasite,mcconnellite,olkhonskite,oxy-chromium-dravite,polyakovite-ce,putnisite,redledgeite,senaite,shuiskite,tarapacáite,tongbaite,uvarovite,vanadio-oxy-chromium-dravite,volkonskoite,warwickite,yedlinite,yimengite,zincochromite,cassedanneite,chromio-pargasite,chromschieffelinite,crocoite,cronusite,deanesmithite,dukeite,edoylerite,embreyite,fornacite,georgerobinsonite,hemihedrite,iranite,macquartite,petterdite,phoenicochroite,redingtonite,reynoldsite,rilandite,santanaite,stichtite,vauquelinite,wattersite,woodallite,yarlongite]
+
+# Alternatively, a list of dictionaries can be provided in place of a list of terms
+dictionary: cr

@@ -1,4 +1,4 @@
-# Cobalt
+# CrMin
 A template for building applications to extract information from published documents in the [GeoDeepDive](https://geodeepdive.org) infrastructure
 
 ## Getting started
